@@ -13,6 +13,7 @@ export class Player extends Schema {
         this.atk = 10;
         this.x = 0; // Tọa độ X
         this.y = 0; // Tọa độ Y
+        this.angle = 0; // Hướng, đơn vị radian
     }
 }
 
@@ -25,4 +26,5 @@ defineTypes(Player, {
     maxHp: "number",
     x: "number", // Tọa độ X (số)
     y: "number", // Tọa độ Y (số)
+    angle: "number", // Hướng, radian
 });
