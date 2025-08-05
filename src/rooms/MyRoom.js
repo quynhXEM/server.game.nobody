@@ -1,6 +1,7 @@
 import { Room } from "@colyseus/core";
 import { MyRoomState } from "./schema/MyRoomState.js";
 import { Player } from "./schema/Player.js";
+import { Bullet } from "./schema/Bullet.js";
 
 // Hàm chuẩn hóa góc về [0, 360)
 function normalizeAngle(angle) {
@@ -49,15 +50,31 @@ export class MyRoom extends Room {
   onCreate(options) {
     console.log("Phòng đã được tạo:", this.roomId);
 
+    // Lắng nghe sự kiện bắn đạn
+    this.onMessage("shoot", (client) => {
+      const player = this.state.players.get(client.sessionId);
+      if (!player) return;
+      // Tạo viên đạn mới tại vị trí và hướng của player
+      const bullet = new Bullet(player.x, player.y, player.angle, client.sessionId);
+      this.state.bullets.push(bullet);
+    });
+
+    // Xử lý di chuyển
     this.onMessage("move", (client, payload) => {
       const player = this.state.players.get(client.sessionId);
       if (!player) return;
 
       const moveSpeed = 5;
       const radius = 50;
+      const mapWidth = 3600;
+      const mapHeight = 1800;
 
       // Tính toán vị trí và góc mới
-      const { newX, newY, angle } = getNextPosition(player, payload, moveSpeed);
+      let { newX, newY, angle } = getNextPosition(player, payload, moveSpeed);
+
+      // Giới hạn player trong map
+      newX = Math.max(radius, Math.min(mapWidth - radius, newX));
+      newY = Math.max(radius, Math.min(mapHeight - radius, newY));
 
       // Kiểm tra va chạm
       if (!isColliding(newX, newY, client.sessionId, this.state.players, radius)) {
@@ -66,6 +83,34 @@ export class MyRoom extends Room {
       }
       player.angle = angle;
     });
+
+    // Tick cập nhật đạn
+    this.setSimulationInterval((dt) => {
+      this.updateBullets();
+    }, 1000 / 60); // 60 lần/giây
+  }
+
+  updateBullets() {
+    const mapWidth = 3600;
+    const mapHeight = 1800;
+    const removeIndexes = [];
+    for (let i = 0; i < this.state.bullets.length; i++) {
+      const bullet = this.state.bullets[i];
+      const rad = bullet.angle * Math.PI / 180;
+      bullet.x += Math.cos(rad) * bullet.speed;
+      bullet.y += Math.sin(rad) * bullet.speed;
+      // Xóa đạn nếu ra khỏi map
+      if (
+        bullet.x < 0 || bullet.x > mapWidth ||
+        bullet.y < 0 || bullet.y > mapHeight
+      ) {
+        removeIndexes.push(i);
+      }
+    }
+    // Xóa đạn khỏi state (từ cuối về đầu để không lệch index)
+    for (let i = removeIndexes.length - 1; i >= 0; i--) {
+      this.state.bullets.splice(removeIndexes[i], 1);
+    }
   }
 
   onJoin(client, options) {
