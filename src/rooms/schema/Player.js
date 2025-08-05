@@ -14,6 +14,7 @@ export class Player extends Schema {
         this.x = 0; // Tọa độ X
         this.y = 0; // Tọa độ Y
         this.angle = 0; // Hướng, đơn vị radian
+        this.isDead = false;
     }
 }
 
@@ -27,4 +28,5 @@ defineTypes(Player, {
     x: "number", // Tọa độ X (số)
     y: "number", // Tọa độ Y (số)
     angle: "number", // Hướng, radian
+    isDead: "boolean",
 });

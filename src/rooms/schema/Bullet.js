@@ -1,8 +1,9 @@
 import { Schema, type, defineTypes } from "@colyseus/schema";
 
 export class Bullet extends Schema {
-  constructor(x = 0, y = 0, angle = 0, ownerId = "") {
+  constructor(id = 0, x = 0, y = 0, angle = 0, ownerId = "") {
     super();
+    this.id = id
     this.x = x;
     this.y = y;
     this.angle = angle;
@@ -12,6 +13,7 @@ export class Bullet extends Schema {
   }
 }
 defineTypes(Bullet, {
+  id: "number",
   x: "number",
   y: "number",
   angle: "number",
