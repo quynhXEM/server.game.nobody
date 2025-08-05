@@ -7,7 +7,7 @@ export class MyRoom extends Room {
   static CONFIG = {
     MAP_WIDTH: 3600,
     MAP_HEIGHT: 1800,
-    PLAYER_RADIUS: 50,
+    PLAYER_RADIUS: 60,
     PLAYER_MOVE_SPEED: 5,
     BULLET_RADIUS: 8,
     OUT_OF_MAP: -9999,
